@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Клікер Гра</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;700&display=swap');
+
+    html, body {
+      margin: 0; padding: 0;
+      width: 100%; height: 100%;
+      font-family: 'Nunito', sans-serif;
+      background: #1e3c72;
+      overflow: hidden;
+      color: white;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      position: relative;
+    }
+
+    #bgCanvas {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      z-index: -1;
+      background: linear-gradient(135deg, #1e3c72, #2a5298);
+    }
+
+    .start-container,
+    .container {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background-color: rgba(255 255 255 / 0.1);
+      border-radius: 20px;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.4);
+      backdrop-filter: blur(8px);
+      padding: 40px 30px;
+      width: 340px;
+    }
+
+    .start-container {
+      padding: 60px 30px;
+    }
+
+    h1 {
+      margin-bottom: 25px;
+      font-size: 32px;
+    }
+
+    #score {
+      font-size: 26px;
+      margin: 20px 0;
+      font-weight: 700;
+    }
+
+    .click-btn {
+      background: linear-gradient(145deg, #66bb6a, #43a047);
+      border: none;
+      padding: 16px 28px;
+      font-size: 20px;
+      border-radius: 12px;
+      cursor: pointer;
+      color: white;
+      transition: transform 0.1s ease, box-shadow 0.3s;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+      margin: 10px 0;
+      width: 100%;
+      max-width: 300px;
+    }
+    .click-btn:hover {
+      box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+    }
+    .click-btn:active {
+      transform: scale(0.95);
+    }
+
+    .upgrade-btn {
+      background: linear-gradient(145deg, #42a5f5, #1e88e5);
+      border: none;
+      padding: 14px 20px;
+      font-size: 16px;
+      border-radius: 10px;
+      cursor: pointer;
+      color: white;
+      margin-top: 10px;
+      transition: box-shadow 0.3s;
+      width: 100%;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+    }
+    .upgrade-btn:hover {
+      box-shadow: 0 6px 16px rgba(0,0,0,0.35);
+    }
+
+    .cost-label {
+      font-size: 14px;
+      margin-top: 15px;
+      color: #ddd;
+      text-align: center;
+    }
+
+    .section {
+      margin-top: 30px;
+      width: 100%;
+      text-align: center;
+    }
+
+    /* Модалка підтвердження */
+    #confirmModal {
+      position: fixed;
+      top: 0; left: 0;
+      width: 100vw; height: 100vh;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      visibility: hidden;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      z-index: 10;
+    }
+    #confirmModal.show {
+      visibility: visible;
+      opacity: 1;
+    }
+    #confirmBox {
+      background: rgba(255 255 255 / 0.1);
+      padding: 30px 25px;
+      border-radius: 15px;
+      box-shadow: 0 8px 25px rgba(0,0,0,0.5);
+      backdrop-filter: blur(10px);
+      max-width: 320px;
+      text-align: center;
+      color: white;
+    }
+    #confirmBox p {
+      font-size: 20px;
+      margin-bottom: 25px;
+    }
+    #confirmBox button {
+      margin: 0 12px;
+      padding: 10px 24px;
+      font-size: 18px;
+      border-radius: 10px;
+      cursor: pointer;
+      border: none;
+      color: white;
+      transition: background-color 0.3s ease;
+      width: 100px;
+    }
+    #confirmYes {
+      background: #e53935;
+    }
+    #confirmYes:hover {
+      background: #c62828;
+    }
+    #confirmNo {
+      background: #43a047;
+    }
+    #confirmNo:hover {
+      background: #2e7d32;
+    }
+    /* Додаємо в існуючий стиль всередині <style> */
+
+@media (max-width: 480px) {
+  .start-container,
+  .container {
+    width: 90vw;           /* 90% ширини екрану */
+    padding: 25px 20px;    /* менше паддінгів */
+  }
+
+  h1 {
+    font-size: 24px !important; /* трохи менше заголовки */
+  }
+
+  #score {
+    font-size: 20px !important;
+  }
+
+  .click-btn, .upgrade-btn {
+    font-size: 22px !important;  /* більший текст для кнопок */
+    padding: 18px 20px !important;
+    max-width: 100% !important;
+    margin: 12px 0 !important;
+  }
+
+  #confirmBox {
+    max-width: 90vw !important;
+    padding: 20px 15px !important;
+  }
+  #confirmBox p {
+    font-size: 18px !important;
+  }
+  #confirmBox button {
+    width: 45% !important;
+    font-size: 18px !important;
+    padding: 12px 0 !important;
+    margin: 0 5px !important;
+  }
+}
+
+  </style>
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+
+  <div class="start-container" id="startContainer">
+    <h1>Готовий до гри?</h1>
+    <button class="click-btn" onclick="startGame()">Старт</button>
+  </div>
+
+  <div class="container" id="gameContainer" style="display:none;">
+    <div id="score">Очки: 0</div>
+    <button class="click-btn" onclick="clickHandler()">Клікни!</button>
+    <div class="section">
+      <div class="cost-label">Прокачка (+1): <span id="upgradeCost">10</span> очок</div>
+      <button class="upgrade-btn" onclick="buyUpgrade()">Прокачка</button>
+    </div>
+    <div class="section">
+      <div class="cost-label">Автоклікер: <span id="autoClickerCost">50</span> очок</div>
+      <button class="upgrade-btn" onclick="buyAutoClicker()">Автоклікер</button>
+    </div>
+    <div class="section" style="margin-top: 40px;">
+      <button class="upgrade-btn" style="background: #f44336;" onclick="showConfirm()">Скинути прогрес</button>
+    </div>
+  </div>
+
+  <!-- Модалка підтвердження -->
+  <div id="confirmModal">
+    <div id="confirmBox">
+      <p>Ви дійсно хочете скинути прогрес?</p>
+      <button id="confirmYes">Так</button>
+      <button id="confirmNo">Ні</button>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById('bgCanvas');
+    const ctx = canvas.getContext('2d');
+    let particles = [];
+    const particleCount = 60;
+
+    function resizeCanvas() {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas();
+
+    class Particle {
+      constructor() {
+        this.reset();
+      }
+      reset() {
+        this.x = Math.random() * canvas.width;
+        this.y = Math.random() * canvas.height;
+        this.radius = 1 + Math.random() * 2;
+        this.speedX = (Math.random() - 0.5) * 0.3;
+        this.speedY = (Math.random() - 0.5) * 0.3;
+        this.alpha = 0.2 + Math.random() * 0.3;
+      }
+      update() {
+        this.x += this.speedX;
+        this.y += this.speedY;
+        if (this.x < 0 || this.x > canvas.width || this.y < 0 || this.y > canvas.height) {
+          this.reset();
+        }
+      }
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+        ctx.fillStyle = `rgba(255, 255, 255, ${this.alpha})`;
+        ctx.fill();
+      }
+    }
+
+    for (let i = 0; i < particleCount; i++) {
+      particles.push(new Particle());
+    }
+
+    function animate() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      for (let p of particles) {
+        p.update();
+        p.draw();
+      }
+      requestAnimationFrame(animate);
+    }
+    animate();
+
+    let score = 0;
+    let clickPower = 1;
+    let autoClickers = 0;
+
+    let upgradeBaseCost = 10;
+    let upgradeMaxCost = 500;
+    let autoClickerBaseCost = 50;
+    let autoClickerMaxCost = 1000;
+
+    const scoreEl = document.getElementById('score');
+    const upgradeCostEl = document.getElementById('upgradeCost');
+    const autoClickerCostEl = document.getElementById('autoClickerCost');
+    const startContainer = document.getElementById('startContainer');
+    const gameContainer = document.getElementById('gameContainer');
+    const confirmModal = document.getElementById('confirmModal');
+    const confirmYes = document.getElementById('confirmYes');
+    const confirmNo = document.getElementById('confirmNo');
+
+    function startGame() {
+      startContainer.style.display = 'none';
+      gameContainer.style.display = 'flex';
+    }
+
+    function saveProgress() {
+      document.cookie = `score=${score}; path=/`;
+      document.cookie = `clickPower=${clickPower}; path=/`;
+      document.cookie = `autoClickers=${autoClickers}; path=/`;
+    }
+
+    function loadProgress() {
+      const cookies = document.cookie.split(';');
+      cookies.forEach(cookie => {
+        const [key, value] = cookie.trim().split('=');
+        if (key === 'score') score = parseInt(value) || 0;
+        if (key === 'clickPower') clickPower = parseInt(value) || 1;
+        if (key === 'autoClickers') autoClickers = parseInt(value) || 0;
+      });
+    }
+
+    function getUpgradeCost() {
+      return Math.min(upgradeBaseCost * clickPower, upgradeMaxCost);
+    }
+
+    function getAutoClickerCost() {
+      return Math.min(autoClickerBaseCost * (autoClickers + 1), autoClickerMaxCost);
+    }
+
+    function clickHandler() {
+      score += clickPower;
+      updateUI();
+      saveProgress();
+    }
+
+    function buyUpgrade() {
+      const cost = getUpgradeCost();
+      if (score >= cost) {
+        score -= cost;
+        clickPower++;
+        updateUI();
+        saveProgress();
+      }
+    }
+
+    function buyAutoClicker() {
+      const cost = getAutoClickerCost();
+      if (score >= cost) {
+        score -= cost;
+        autoClickers++;
+        updateUI();
+        saveProgress();
+      }
+    }
+
+    function updateUI() {
+      scoreEl.textContent = 'Очки: ' + score;
+      upgradeCostEl.textContent = getUpgradeCost();
+      autoClickerCostEl.textContent = getAutoClickerCost();
+    }
+
+    function showConfirm() {
+      confirmModal.classList.add('show');
+    }
+    function hideConfirm() {
+      confirmModal.classList.remove('show');
+    }
+
+    confirmYes.addEventListener('click', () => {
+      score = 0;
+      clickPower = 1;
+      autoClickers = 0;
+      updateUI();
+      saveProgress();
+      hideConfirm();
+    });
+    confirmNo.addEventListener('click', () => {
+      hideConfirm();
+    });
+
+    setInterval(() => {
+      score += autoClickers;
+      updateUI();
+      saveProgress();
+    }, 1000);
+
+    loadProgress();
+    updateUI();
+  </script>
+</body>
+</html>
