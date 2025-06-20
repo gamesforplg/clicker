@@ -314,21 +314,22 @@
       gameContainer.style.display = 'flex';
     }
 
-    function saveProgress() {
-      document.cookie = `score=${score}; path=/`;
-      document.cookie = `clickPower=${clickPower}; path=/`;
-      document.cookie = `autoClickers=${autoClickers}; path=/`;
-    }
+function saveProgress() {
+  localStorage.setItem('score', score);
+  localStorage.setItem('clickPower', clickPower);
+  localStorage.setItem('autoClickers', autoClickers);
+}
 
-    function loadProgress() {
-      const cookies = document.cookie.split(';');
-      cookies.forEach(cookie => {
-        const [key, value] = cookie.trim().split('=');
-        if (key === 'score') score = parseInt(value) || 0;
-        if (key === 'clickPower') clickPower = parseInt(value) || 1;
-        if (key === 'autoClickers') autoClickers = parseInt(value) || 0;
-      });
-    }
+function loadProgress() {
+  const savedScore = localStorage.getItem('score');
+  const savedClickPower = localStorage.getItem('clickPower');
+  const savedAutoClickers = localStorage.getItem('autoClickers');
+
+  score = savedScore !== null ? parseInt(savedScore) : 0;
+  clickPower = savedClickPower !== null ? parseInt(savedClickPower) : 1;
+  autoClickers = savedAutoClickers !== null ? parseInt(savedAutoClickers) : 0;
+}
+
 
     function getUpgradeCost() {
       return Math.min(upgradeBaseCost * clickPower, upgradeMaxCost);
